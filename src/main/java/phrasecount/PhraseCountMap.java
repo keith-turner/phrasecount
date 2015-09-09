@@ -26,6 +26,6 @@ public class PhraseCountMap extends CollisionFreeMap<String, PhraseCounts, Phras
 
   @Override
   protected void updatingValue(TransactionBase tx, String key, PhraseCounts oldValue, PhraseCounts currentValue) {
-
+    new PhraseExporter2().getExportQueue(null).add(tx, key, currentValue);
   }
 }
