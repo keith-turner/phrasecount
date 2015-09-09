@@ -13,7 +13,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <accumulo.version>1.6.1</accumulo.version>
-    <fluo.version>1.0.0-beta-1</fluo.version>
+    <fluo.version>1.0.0-beta-2-SNAPSHOT</fluo.version>
+    <fluo-recipes.version>1.0.0-beta-1-SNAPSHOT</fluo-recipes.version>
   </properties>
 
   <build>
@@ -54,6 +55,17 @@
       <version>${fluo.version}</version>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>io.fluo</groupId>
+      <artifactId>fluo-recipes-core</artifactId>
+      <version>${fluo-recipes.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.fluo</groupId>
+      <artifactId>fluo-recipes-accumulo</artifactId>
+      <version>${fluo-recipes.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.accumulo</groupId>
       <artifactId>accumulo-core</artifactId>
