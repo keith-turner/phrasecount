@@ -6,24 +6,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
-import io.fluo.api.client.FluoAdmin.InitOpts;
-import io.fluo.api.client.FluoFactory;
-import io.fluo.api.config.FluoConfiguration;
-import io.fluo.api.config.ObserverConfiguration;
-import io.fluo.api.mini.MiniFluo;
-import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.minicluster.MemoryUnit;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
 import org.apache.accumulo.minicluster.ServerType;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import phrasecount.HCCounter;
+
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
+
+import io.fluo.api.client.FluoAdmin.InitOpts;
+import io.fluo.api.client.FluoFactory;
+import io.fluo.api.config.FluoConfiguration;
+import io.fluo.api.config.ObserverConfiguration;
+import io.fluo.api.mini.MiniFluo;
+import io.fluo.recipes.accumulo.export.AccumuloExporter;
+import io.fluo.recipes.accumulo.export.TableInfo;
+import io.fluo.recipes.export.ExportQueue;
+import io.fluo.recipes.map.CollisionFreeMap;
+import phrasecount.PcmCombiner;
+import phrasecount.PcmUpdateObserver;
 import phrasecount.PhraseCounter;
-import phrasecount.PhraseExporter;
+import phrasecount.PhraseCounts;
+import phrasecount.PhraseExporter2;
 
 
 public class Mini {
@@ -84,7 +91,6 @@ public class Mini {
     fluoConfig.setAccumuloZookeepers(cluster.getZooKeepers());
     fluoConfig.setInstanceZookeepers(cluster.getZooKeepers()+"/fluo");
 
-
     fluoConfig.setAccumuloTable("data");
     fluoConfig.setWorkerThreads(params.workerThreads);
 
@@ -92,12 +98,12 @@ public class Mini {
 
     List<ObserverConfiguration> observers = new ArrayList<ObserverConfiguration>();
     observers.add(new ObserverConfiguration(PhraseCounter.class.getName()));
-
-    Map<String,String> exportConfig = setupAccumuloExport(cluster);
-    observers.add(new ObserverConfiguration(PhraseExporter.class.getName()).setParameters(exportConfig));
-
-    observers.add(new ObserverConfiguration(HCCounter.class.getName()));
     fluoConfig.setObservers(observers);
+
+    CollisionFreeMap.configure(fluoConfig, new CollisionFreeMap.Options("pcm", PcmCombiner.class, PcmUpdateObserver.class, String.class, PhraseCounts.class, PhraseCounts.class, 17));
+    ExportQueue.configure(fluoConfig, new ExportQueue.Options("aeq", PhraseExporter2.class, String.class, PhraseCounts.class, 17, 997));
+    //TODO maybe just take FluoConfig
+    AccumuloExporter.setExportTableInfo(fluoConfig.getAppConfiguration(), "aeq", new TableInfo(cluster.getInstanceName(), cluster.getZooKeepers(), "root", "secret", "dataExport"));
 
     FluoFactory.newAdmin(fluoConfig).initialize(new InitOpts());
 
@@ -110,21 +116,5 @@ public class Mini {
 
     System.out.println();
     System.out.println("Wrote : " + params.args.get(1));
-  }
-
-  private static Map<String,String> setupAccumuloExport(MiniAccumuloCluster cluster) throws Exception {
-    Connector conn = cluster.getConnector("root", "secret");
-    conn.tableOperations().create("dataExport");
-
-    Map<String,String> exportConfig = new HashMap<String,String>();
-
-    exportConfig.put("sink", "accumulo");
-    exportConfig.put("instance", cluster.getInstanceName());
-    exportConfig.put("zookeepers", cluster.getZooKeepers());
-    exportConfig.put("user", "root");
-    exportConfig.put("password", "secret");
-    exportConfig.put("table", "dataExport");
-
-    return exportConfig;
   }
 }
