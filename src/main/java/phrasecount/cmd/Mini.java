@@ -30,7 +30,7 @@ import phrasecount.PcmCombiner;
 import phrasecount.PcmUpdateObserver;
 import phrasecount.PhraseCounter;
 import phrasecount.PhraseCounts;
-import phrasecount.PhraseExporter2;
+import phrasecount.PhraseExporter;
 
 
 public class Mini {
@@ -101,7 +101,7 @@ public class Mini {
     fluoConfig.setObservers(observers);
 
     CollisionFreeMap.configure(fluoConfig, new CollisionFreeMap.Options("pcm", PcmCombiner.class, PcmUpdateObserver.class, String.class, PhraseCounts.class, PhraseCounts.class, 17));
-    ExportQueue.configure(fluoConfig, new ExportQueue.Options("aeq", PhraseExporter2.class, String.class, PhraseCounts.class, 17, 997));
+    ExportQueue.configure(fluoConfig, new ExportQueue.Options("aeq", PhraseExporter.class, String.class, PhraseCounts.class, 17));
     //TODO maybe just take FluoConfig
     AccumuloExporter.setExportTableInfo(fluoConfig.getAppConfiguration(), "aeq", new TableInfo(cluster.getInstanceName(), cluster.getZooKeepers(), "root", "secret", "dataExport"));
 

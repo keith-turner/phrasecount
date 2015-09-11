@@ -4,7 +4,7 @@ import org.apache.accumulo.core.data.Mutation;
 
 import io.fluo.recipes.accumulo.export.AccumuloExporter;
 
-public class PhraseExporter2 extends AccumuloExporter<String, PhraseCounts>{
+public class PhraseExporter extends AccumuloExporter<String, PhraseCounts>{
   @Override
   protected Mutation convert(String phrase, long seq, PhraseCounts pc) {
 
