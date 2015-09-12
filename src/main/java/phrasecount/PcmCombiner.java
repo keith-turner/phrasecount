@@ -3,16 +3,20 @@ package phrasecount;
 import java.util.Iterator;
 
 import com.google.common.base.Optional;
-
+import io.fluo.recipes.map.CollisionFreeMap;
 import io.fluo.recipes.map.Combiner;
+import phrasecount.pojos.Counts;
 
-public class PcmCombiner implements Combiner<String, PhraseCounts, PhraseCounts> {
+/**
+ * A combiner for the {@link CollisionFreeMap} that stores phrase counts. The
+ * {@link CollisionFreeMap} calls this combiner when it lazily updates the counts for a phrase.
+ */
+public class PcmCombiner implements Combiner<String, Counts, Counts> {
 
   @Override
-  public PhraseCounts combine(String key, Optional<PhraseCounts> currentValue,
-      Iterator<PhraseCounts> updates) {
-    PhraseCounts sum = currentValue.or(new PhraseCounts(0, 0));
-    while(updates.hasNext()) {
+  public Counts combine(String key, Optional<Counts> currentValue, Iterator<Counts> updates) {
+    Counts sum = currentValue.or(new Counts(0, 0));
+    while (updates.hasNext()) {
       sum = sum.add(updates.next());
     }
 

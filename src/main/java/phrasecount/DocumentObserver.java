@@ -1,11 +1,5 @@
 package phrasecount;
 
-import static phrasecount.Constants.DOC_CONTENT_COL;
-import static phrasecount.Constants.DOC_REF_COUNT_COL;
-import static phrasecount.Constants.INDEX_CHECK_COL;
-import static phrasecount.Constants.INDEX_STATUS_COL;
-import static phrasecount.Constants.TYPEL;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,14 +10,23 @@ import io.fluo.api.data.Column;
 import io.fluo.api.observer.AbstractObserver;
 import io.fluo.api.types.TypedTransactionBase;
 import io.fluo.recipes.map.CollisionFreeMap;
+import phrasecount.pojos.Counts;
+import phrasecount.pojos.Document;
+
+import static phrasecount.Constants.DOC_CONTENT_COL;
+import static phrasecount.Constants.DOC_REF_COUNT_COL;
+import static phrasecount.Constants.INDEX_CHECK_COL;
+import static phrasecount.Constants.INDEX_STATUS_COL;
+import static phrasecount.Constants.PCM_ID;
+import static phrasecount.Constants.TYPEL;
 
 /**
- * An Observer that updates phrase counts when a document is added or removed.  In needed, the observer that exports phrase counts is triggered.
+ * An Observer that updates phrase counts when a document is added or removed.
  */
 
-public class PhraseCounter extends AbstractObserver {
+public class DocumentObserver extends AbstractObserver {
 
-  private CollisionFreeMap<String, PhraseCounts, PhraseCounts> pcMap;
+  private CollisionFreeMap<String, Counts, Counts> pcMap;
 
   private static enum IndexStatus {
     INDEXED, UNINDEXED
@@ -31,7 +34,7 @@ public class PhraseCounter extends AbstractObserver {
 
   @Override
   public void init(Context context) throws Exception {
-    pcMap = CollisionFreeMap.getInstance("pcm", context.getAppConfiguration());
+    pcMap = CollisionFreeMap.getInstance(PCM_ID, context.getAppConfiguration());
   }
 
   @Override
@@ -50,7 +53,8 @@ public class PhraseCounter extends AbstractObserver {
       deleteDocument(ttx, row);
     }
 
-    // TODO modifying the trigger is currently broken, enable more than one observer to commit for a notification
+    // TODO modifying the trigger is currently broken, enable more than one observer to commit for a
+    // notification
     // tx.delete(row, col);
 
   }
@@ -61,7 +65,8 @@ public class PhraseCounter extends AbstractObserver {
   }
 
   private void deleteDocument(TypedTransactionBase tx, Bytes row) {
-    // TODO it would probably be useful to have a deleteRow method on Transaction... this method could start off w/ a simple implementation and later be
+    // TODO it would probably be useful to have a deleteRow method on Transaction... this method
+    // could start off w/ a simple implementation and later be
     // optimized... or could have a delete range option
 
     // TODO this is brittle, this code assumes it knows all possible columns
@@ -71,16 +76,19 @@ public class PhraseCounter extends AbstractObserver {
 
   }
 
-  private void updatePhraseCounts(TypedTransactionBase ttx, Bytes row, int multiplier) throws Exception {
+  private void updatePhraseCounts(TypedTransactionBase ttx, Bytes row, int multiplier)
+      throws Exception {
     String content = ttx.get().row(row).col(Constants.DOC_CONTENT_COL).toString();
 
-    // this makes the assumption that the implementation of getPhrases is invariant. This is probably a bad assumption. A possible way to make this more robust
-    // is to store the output of getPhrases when indexing and use the stored output when unindexing. Alternatively, could store the version of Document used for
+    // this makes the assumption that the implementation of getPhrases is invariant. This is
+    // probably a bad assumption. A possible way to make this more robust
+    // is to store the output of getPhrases when indexing and use the stored output when unindexing.
+    // Alternatively, could store the version of Document used for
     // indexing.
-    Map<String,Integer> phrases = new Document(null, content).getPhrases();
-    Map<String, PhraseCounts> updates = new HashMap<>(phrases.size());
+    Map<String, Integer> phrases = new Document(null, content).getPhrases();
+    Map<String, Counts> updates = new HashMap<>(phrases.size());
     for (Entry<String, Integer> entry : phrases.entrySet()) {
-      updates.put(entry.getKey(), new PhraseCounts(1*multiplier, entry.getValue() * multiplier));
+      updates.put(entry.getKey(), new Counts(1 * multiplier, entry.getValue() * multiplier));
     }
 
     pcMap.update(ttx, updates);
