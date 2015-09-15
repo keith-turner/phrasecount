@@ -17,7 +17,7 @@ import static phrasecount.Constants.EXPORT_QUEUE_ID;
 
 /**
  * This class is notified when the {@link CollisionFreeMap} used to store phrase counts updates a
- * phrase count. Updates are placed an Accumulo export queued to be exported to the table storing
+ * phrase count. Updates are placed an Accumulo export queue to be exported to the table storing
  * phrase counts for query.
  */
 
@@ -31,8 +31,8 @@ public class PcmUpdateObserver extends UpdateObserver<String, Counts> {
   }
 
   @Override
-  public void updatingValues(TransactionBase tx, Iterable<Update<String, Counts>> updates) {
-    Iterator<Export<String, Counts>> exports = Iterators.transform(updates.iterator(),
+  public void updatingValues(TransactionBase tx, Iterator<Update<String, Counts>> updates) {
+    Iterator<Export<String, Counts>> exports = Iterators.transform(updates,
         new Function<Update<String, Counts>, Export<String, Counts>>() {
           @Override
           public Export<String, Counts> apply(Update<String, Counts> update) {
