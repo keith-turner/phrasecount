@@ -49,7 +49,7 @@ public class Application {
     // set up a collion free map to combine phrase counts
     CollisionFreeMap.configure(fluoConfig,
         new CollisionFreeMap.Options(PCM_ID, PcmCombiner.class, PcmUpdateObserver.class,
-            String.class, Counts.class, Counts.class, opts.phraseCountMapBuckets));
+            String.class, Counts.class, opts.phraseCountMapBuckets));
 
     // setup an export queue to to send phrase count updates to an Accumulo table
     ExportQueue.configure(fluoConfig, new ExportQueue.Options(EXPORT_QUEUE_ID, PcExporter.class,

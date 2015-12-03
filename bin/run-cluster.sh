@@ -26,15 +26,22 @@ $FLUO_HOME/bin/fluo new phrasecount
 
 #build and copy phrasecount jar
 (cd $PC_HOME; mvn package -DskipTests)
-cp $PC_JAR $FLUO_HOME/apps/phrasecount/lib/
 
-#configure Fluo
-sed -i '/io.fluo.observer/d' $APP_PROPS
-#need to uncomment zookeeper line, if its commented for interpolation to work
-sed -i 's/#io.fluo.client.accumulo.zookeepers/io.fluo.client.accumulo.zookeepers/' $APP_PROPS
-echo 'io.fluo.observer.0=phrasecount.PhraseCounter' >> $APP_PROPS
-echo 'io.fluo.observer.1=phrasecount.PhraseExporter,sink=accumulo,instance=${io.fluo.client.accumulo.instance},zookeepers=${io.fluo.client.accumulo.zookeepers},user=${io.fluo.client.accumulo.user},password=${io.fluo.client.accumulo.password},table=pcExport' >> $APP_PROPS
-echo 'io.fluo.observer.weak.0=phrasecount.HCCounter' >> $APP_PROPS
+FLUO_APP_LIB=$FLUO_HOME/apps/phrasecount/lib/
+cp $PC_JAR $FLUO_APP_LIB
+DEP_PLUGIN=org.apache.maven.plugins:maven-dependency-plugin:2.10
+mvn $DEP_PLUGIN:get -Dartifact=io.fluo:fluo-recipes-core:1.0.0-beta-1-SNAPSHOT:jar -Ddest=$FLUO_APP_LIB
+mvn $DEP_PLUGIN:get -Dartifact=io.fluo:fluo-recipes-accumulo:1.0.0-beta-1-SNAPSHOT:jar -Ddest=$FLUO_APP_LIB
+# Add kryo and its dependencies
+mvn $DEP_PLUGIN:get -Dartifact=com.esotericsoftware:kryo:3.0.3:jar -Ddest=$FLUO_APP_LIB
+mvn $DEP_PLUGIN:get -Dartifact=com.esotericsoftware:minlog:1.3.0:jar -Ddest=$FLUO_APP_LIB
+mvn $DEP_PLUGIN:get -Dartifact=com.esotericsoftware:reflectasm:1.10.1:jar -Ddest=$FLUO_APP_LIB
+mvn $DEP_PLUGIN:get -Dartifact=org.objenesis:objenesis:2.1:jar -Ddest=$FLUO_APP_LIB
+
+export CLASSPATH=$FLUO_APP_LIB/*:`$FLUO_HOME/bin/mini-fluo classpath -a -z -H`:$FLUO_HOME/lib/log4j/*
+
+#TODO maybe have two command to make it easier to understand.... one to create table and one print observer config
+java phrasecount.cmd.Setup $APP_PROPS pcExport >> $APP_PROPS
 
 $FLUO_HOME/bin/fluo init phrasecount -f
 $FLUO_HOME/bin/fluo start phrasecount
@@ -47,10 +54,10 @@ java phrasecount.cmd.Load $APP_PROPS $TXT_DIR
 $FLUO_HOME/bin/fluo wait phrasecount
 
 #print phrase counts
-java phrasecount.cmd.Print $APP_PROPS 
+#java phrasecount.cmd.Print $APP_PROPS 
 
 #compare phrasecounts in Fluo table and export table 
-java phrasecount.cmd.Compare $APP_PROPS phrasecount pcExport
+#java phrasecount.cmd.Compare $APP_PROPS phrasecount pcExport
 
 $FLUO_HOME/bin/fluo stop phrasecount
 

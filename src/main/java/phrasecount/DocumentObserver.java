@@ -26,7 +26,7 @@ import static phrasecount.Constants.TYPEL;
 
 public class DocumentObserver extends AbstractObserver {
 
-  private CollisionFreeMap<String, Counts, Counts> pcMap;
+  private CollisionFreeMap<String, Counts> pcMap;
 
   private static enum IndexStatus {
     INDEXED, UNINDEXED
