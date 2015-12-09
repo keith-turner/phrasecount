@@ -49,6 +49,8 @@ $FLUO_HOME/bin/fluo info phrasecount
 
 #Load data
 java phrasecount.cmd.Load $APP_PROPS $TXT_DIR
+$FLUO_HOME/bin/fluo exec phrasecount phrasecount.cmd.Load $TXT_DIR
+
 
 #wait for all notifications to be processed.
 $FLUO_HOME/bin/fluo wait phrasecount
