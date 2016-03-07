@@ -18,6 +18,11 @@ public class Counts {
     this.totalPhraseCount = totalPhraseCount;
   }
 
+  public Counts(Counts counts) {
+    this.docPhraseCount = counts.docPhraseCount;
+    this.totalPhraseCount = counts.totalPhraseCount;
+  }
+
   public Counts add(Counts other) {
     return new Counts(this.docPhraseCount + other.docPhraseCount, this.totalPhraseCount + other.totalPhraseCount);
   }

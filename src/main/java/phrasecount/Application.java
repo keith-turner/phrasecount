@@ -2,6 +2,7 @@ package phrasecount;
 
 import io.fluo.api.config.FluoConfiguration;
 import io.fluo.api.config.ObserverConfiguration;
+import io.fluo.recipes.accumulo.export.AccumuloExport;
 import io.fluo.recipes.accumulo.export.AccumuloExporter;
 import io.fluo.recipes.accumulo.export.TableInfo;
 import io.fluo.recipes.export.ExportQueue;
@@ -59,8 +60,9 @@ public class Application {
             opts.phraseCountMapBuckets));
 
     // setup an export queue to to send phrase count updates to an Accumulo table
-    ExportQueue.configure(fluoConfig, new ExportQueue.Options(EXPORT_QUEUE_ID, PhraseExporter.class,
-        String.class, Counts.class, opts.exportQueueBuckets));
+    ExportQueue.configure(fluoConfig,
+        new ExportQueue.Options(EXPORT_QUEUE_ID, AccumuloExporter.class.getName(),
+            String.class.getName(), AccumuloExport.class.getName(), opts.exportQueueBuckets));
     AccumuloExporter.setExportTableInfo(fluoConfig.getAppConfiguration(), EXPORT_QUEUE_ID,
         new TableInfo(opts.instance, opts.zookeepers, opts.user, opts.password, opts.exportTable));
   }
