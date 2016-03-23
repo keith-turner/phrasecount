@@ -6,8 +6,8 @@ import io.fluo.recipes.accumulo.export.AccumuloExport;
 import io.fluo.recipes.accumulo.export.AccumuloExporter;
 import io.fluo.recipes.accumulo.export.TableInfo;
 import io.fluo.recipes.export.ExportQueue;
+import io.fluo.recipes.kryo.KryoSimplerSerializer;
 import io.fluo.recipes.map.CollisionFreeMap;
-import io.fluo.recipes.serialization.KryoSimplerSerializer;
 import phrasecount.pojos.Counts;
 import phrasecount.pojos.PcKryoFactory;
 
@@ -63,7 +63,7 @@ public class Application {
     ExportQueue.configure(fluoConfig,
         new ExportQueue.Options(EXPORT_QUEUE_ID, AccumuloExporter.class.getName(),
             String.class.getName(), AccumuloExport.class.getName(), opts.exportQueueBuckets));
-    AccumuloExporter.setExportTableInfo(fluoConfig.getAppConfiguration(), EXPORT_QUEUE_ID,
+    AccumuloExporter.setExportTableInfo(fluoConfig, EXPORT_QUEUE_ID,
         new TableInfo(opts.instance, opts.zookeepers, opts.user, opts.password, opts.exportTable));
   }
 }

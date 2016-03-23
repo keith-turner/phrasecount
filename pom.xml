@@ -73,6 +73,11 @@
       <artifactId>fluo-recipes-accumulo</artifactId>
       <version>${fluo-recipes.version}</version>
     </dependency>
+    <dependency>
+      <groupId>io.fluo</groupId>
+      <artifactId>fluo-recipes-kryo</artifactId>
+      <version>${fluo-recipes.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.accumulo</groupId>
