@@ -10,6 +10,8 @@ import org.apache.fluo.api.data.Column;
 import org.apache.fluo.api.observer.AbstractObserver;
 import org.apache.fluo.recipes.core.map.CollisionFreeMap;
 import org.apache.fluo.recipes.core.types.TypedTransactionBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import phrasecount.pojos.Counts;
 import phrasecount.pojos.Document;
 
@@ -25,6 +27,8 @@ import static phrasecount.Constants.TYPEL;
  */
 public class DocumentObserver extends AbstractObserver {
 
+  private static final Logger log = LoggerFactory.getLogger("pc.doco");
+
   private CollisionFreeMap<String, Counts> pcMap;
 
   private enum IndexStatus {
@@ -38,6 +42,8 @@ public class DocumentObserver extends AbstractObserver {
 
   @Override
   public void process(TransactionBase tx, Bytes row, Column col) throws Exception {
+
+    log.info("ntfy {} {}", row, col);
 
     TypedTransactionBase ttx = TYPEL.wrap(tx);
 
